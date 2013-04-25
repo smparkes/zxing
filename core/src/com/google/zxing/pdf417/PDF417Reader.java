@@ -29,7 +29,7 @@ import com.google.zxing.ResultMetadataType;
 import com.google.zxing.ResultPoint;
 import com.google.zxing.multi.MultipleBarcodeReader;
 import com.google.zxing.pdf417.decoder.PDF417ScanningDecoder;
-import com.google.zxing.pdf417.detector.DetectorNew;
+import com.google.zxing.pdf417.detector.Detector;
 import com.google.zxing.pdf417.detector.PDF417DetectorResult;
 
 import java.util.ArrayList;
@@ -82,7 +82,7 @@ public final class PDF417Reader implements Reader, MultipleBarcodeReader {
   private Result[] decode(BinaryBitmap image, Map<DecodeHintType,?> hints, boolean multiple) throws NotFoundException,
       FormatException, ChecksumException {
     List<Result> results = new ArrayList<Result>();
-    PDF417DetectorResult detectorResult = new DetectorNew(image).detect(multiple);
+    PDF417DetectorResult detectorResult = new Detector(image).detect(multiple);
     for (ResultPoint[] points : detectorResult.getPoints()) {
       PDF417DecoderResult decoderResult = PDF417ScanningDecoder.decode(detectorResult.getBits(), points[4], points[5],
           points[6], points[7], getMinCodewordWidth(points), getMaxCodewordWidth(points));

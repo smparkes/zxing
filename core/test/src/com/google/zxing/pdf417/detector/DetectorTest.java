@@ -22,7 +22,7 @@ public class DetectorTest {
 
   public void testMirror(int size) {
     BitArray result = new BitArray(size);
-    DetectorNew.mirror(getInput(size), result);
+    Detector.mirror(getInput(size), result);
     Assert.assertEquals(getExpected(size), result);
   }
 
@@ -36,7 +36,7 @@ public class DetectorTest {
 
   public void testRotate180(int width, int height) throws NotFoundException {
     BitMatrix input = getInput(width, height);
-    DetectorNew.rotate180(input);
+    Detector.rotate180(input);
     BitMatrix expected = getExpected(width, height);
 
     for (int y = 0; y < height; y++) {

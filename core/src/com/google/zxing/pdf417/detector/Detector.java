@@ -36,7 +36,7 @@ import java.util.Map;
  * @author dswitkin@google.com (Daniel Switkin)
  * @author Guenther Grau
  */
-public final class DetectorNew {
+public final class Detector {
 
   private static final int[] INDEXES_START_PATTERN = new int[] { 0, 4, 1, 5 };
   private static final int[] INDEXES_STOP_PATTERN = new int[] { 6, 2, 7, 3 };
@@ -62,7 +62,7 @@ public final class DetectorNew {
 
   private final BinaryBitmap image;
 
-  public DetectorNew(BinaryBitmap image) {
+  public Detector(BinaryBitmap image) {
     this.image = image;
   }
 
