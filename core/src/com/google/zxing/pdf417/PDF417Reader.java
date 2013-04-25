@@ -129,7 +129,6 @@ public final class PDF417Reader implements Reader, MultipleBarcodeReader {
 
   @Override
   public void reset() {
-    // do nothing
+    // nothing needs to be reset
   }
-
 }
