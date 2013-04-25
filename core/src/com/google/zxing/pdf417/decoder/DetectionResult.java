@@ -1,11 +1,8 @@
 package com.google.zxing.pdf417.decoder;
 
 import com.google.zxing.common.BitMatrix;
-import com.google.zxing.pdf417.decoder.SimpleLog.LEVEL;
 
-import java.util.Formatter;
-
-public class DetectionResult implements SimpleLog.Loggable {
+public class DetectionResult {
   private static final int ADJUST_ROW_NUMBER_SKIP = 2;
   private final BarcodeMetadata barcodeMetadata;
   private final DetectionResultColumn[] detectionResultColumns;
@@ -48,17 +45,6 @@ public class DetectionResult implements SimpleLog.Loggable {
     return detectionResultColumns[barcodeColumn];
   }
 
-  private void setRowNumberInIndicatorColumn(DetectionResultColumn detectionResultColumn) {
-    if (detectionResultColumn == null) {
-      return;
-    }
-    for (Codeword codeword : detectionResultColumn.getCodewords()) {
-      if (codeword != null) {
-        codeword.setRowNumberAsRowIndicatorColumn();
-      }
-    }
-  }
-
   private void adjustIndicatorColumnRowNumbers(DetectionResultColumn detectionResultColumn) {
     if (detectionResultColumn == null) {
       return;
@@ -69,22 +55,12 @@ public class DetectionResult implements SimpleLog.Loggable {
   public DetectionResultColumn[] getDetectionResultColumns() {
     adjustIndicatorColumnRowNumbers(detectionResultColumns[0]);
     adjustIndicatorColumnRowNumbers(detectionResultColumns[barcodeColumnCount + 1]);
-    SimpleLog.log(LEVEL.DEVEL, "Before adjustRowNumbers");
-    SimpleLog.log(LEVEL.DEVEL, this);
     int unadjustedCodewordCount = 900;
     int previousUnadjustedCount;
     do {
       previousUnadjustedCount = unadjustedCodewordCount;
       unadjustedCodewordCount = adjustRowNumbers();
     } while (unadjustedCodewordCount > 0 && unadjustedCodewordCount < previousUnadjustedCount);
-
-    if (unadjustedCodewordCount > 0) {
-      SimpleLog.log(LEVEL.INFO, unadjustedCodewordCount +
-          " codewords without valid row number. Values will be ignored!");
-    }
-
-    SimpleLog.log(LEVEL.DEVEL, "After adjustRowNumbers");
-    SimpleLog.log(LEVEL.DEVEL, this);
     return detectionResultColumns;
   }
 
@@ -186,10 +162,7 @@ public class DetectionResult implements SimpleLog.Loggable {
         codeword.setRowNumber(rowIndicatorRowNumber);
         invalidRowCounts = 0;
       } else {
-        if (++invalidRowCounts >= ADJUST_ROW_NUMBER_SKIP) {
-          SimpleLog.log(LEVEL.INFO, "to many consecutive invalid row counts, skipping further columns for this row",
-              codewordsRow, barcodeColumn);
-        }
+        ++invalidRowCounts;
       }
     }
     return invalidRowCounts;
@@ -247,8 +220,6 @@ public class DetectionResult implements SimpleLog.Loggable {
     }
     if (otherCodeword.hasValidRowNumber() && otherCodeword.getBucket() == codeword.getBucket()) {
       codeword.setRowNumber(otherCodeword.getRowNumber());
-      SimpleLog.log(LEVEL.ALL,
-          "corrected rowNumber: codeword: " + codeword.getRowNumber() + ", value: " + codeword.getValue());
       return true;
     }
     return false;
@@ -268,33 +239,5 @@ public class DetectionResult implements SimpleLog.Loggable {
 
   public BoundingBox getBoundingBox() {
     return boundingBox;
-  }
-
-  @Override
-  public String getLogString() {
-    Formatter formatter = new Formatter();
-    DetectionResultColumn rowIndicatorColumn = detectionResultColumns[0];
-    if (rowIndicatorColumn == null) {
-      rowIndicatorColumn = detectionResultColumns[barcodeColumnCount + 1];
-    }
-    for (int codewordsRow = 0; codewordsRow < rowIndicatorColumn.getCodewords().length; codewordsRow++) {
-      formatter.format("CW %3d:", codewordsRow);
-      for (int barcodeColumn = 0; barcodeColumn < barcodeColumnCount + 2; barcodeColumn++) {
-        if (detectionResultColumns[barcodeColumn] == null) {
-          formatter.format("    |   ");
-          continue;
-        }
-        Codeword codeword = detectionResultColumns[barcodeColumn].getCodewords()[codewordsRow];
-        if (codeword == null) {
-          formatter.format("    |   ");
-          continue;
-        }
-        formatter.format(" %3d|%3d", codeword.getRowNumber(), codeword.getValue());
-      }
-      formatter.format("\n");
-    }
-    String result = formatter.toString();
-    formatter.close();
-    return result;
   }
 }

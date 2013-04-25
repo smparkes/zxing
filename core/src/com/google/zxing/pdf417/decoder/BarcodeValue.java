@@ -1,7 +1,5 @@
 package com.google.zxing.pdf417.decoder;
 
-import com.google.zxing.pdf417.decoder.SimpleLog.LEVEL;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -16,9 +14,6 @@ public class BarcodeValue {
     }
     confidence = confidence + 1;
     values.put(value, confidence);
-    //    for (Entry<Integer,Integer> entry : values.entrySet()) {
-    //      SimpleLog.log(LEVEL.ALL, "value: " + entry.getKey() + ", confidence: " + entry.getValue());
-    //    }
   }
 
   public Integer getValue() {
@@ -35,8 +30,6 @@ public class BarcodeValue {
       }
     }
     if (ambigous) {
-      SimpleLog.log(LEVEL.DEVEL, "Ambigous: " + ambigous + " or underspecified value: " + maxConfidence +
-          ", returning null instead");
       return null;
     }
     return result;

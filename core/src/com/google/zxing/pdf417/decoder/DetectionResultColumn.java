@@ -1,10 +1,6 @@
 package com.google.zxing.pdf417.decoder;
 
-import com.google.zxing.pdf417.decoder.SimpleLog.Loggable;
-
-import java.util.Formatter;
-
-public class DetectionResultColumn implements Loggable {
+public class DetectionResultColumn {
   private static final int MAX_NEARBY_DISTANCE = 5;
   protected final BoundingBox boundingBox;
   private final Codeword[] codewords;
@@ -60,21 +56,5 @@ public class DetectionResultColumn implements Loggable {
 
   public Codeword[] getCodewords() {
     return codewords;
-  }
-
-  @Override
-  public String getLogString() {
-    Formatter formatter = new Formatter();
-    int row = 0;
-    for (Codeword codeword : codewords) {
-      if (codeword == null) {
-        formatter.format("%3d:    |   \n", row++);
-        continue;
-      }
-      formatter.format("%3d: %3d|%3d\n", row++, codeword.getRowNumber(), codeword.getValue());
-    }
-    String result = formatter.toString();
-    formatter.close();
-    return result;
   }
 }

@@ -1,7 +1,6 @@
 package com.google.zxing.pdf417.decoder;
 
 import com.google.zxing.ResultPoint;
-import com.google.zxing.pdf417.decoder.SimpleLog.LEVEL;
 
 public class DetectionResultRowIndicatorColumn extends DetectionResultColumn {
 
@@ -59,7 +58,7 @@ public class DetectionResultRowIndicatorColumn extends DetectionResultColumn {
 
       codeword.setRowNumberAsRowIndicatorColumn();
 
-      // This only works if we have a complete RI column. If the column is cut off at the beginning or end, it
+      // This only works if we have a complete RI column. If the RI column is cut off at the top or bottom, it
       // will calculate the wrong numbers and delete correct codewords. Could be used once the barcode height has
       // been calculated properly.
       //      float expectedRowNumber = (codewordsRow - firstRow) / averageRowHeight;
@@ -72,7 +71,7 @@ public class DetectionResultRowIndicatorColumn extends DetectionResultColumn {
 
       int rowDifference = codeword.getRowNumber() - barcodeRow;
 
-      // TODO deal with case where first row indicator doesn't start with 0
+      // TODO improve handling with case where first row indicator doesn't start with 0
 
       if (rowDifference == 0) {
         currentRowHeight++;
@@ -81,17 +80,10 @@ public class DetectionResultRowIndicatorColumn extends DetectionResultColumn {
         currentRowHeight = 1;
         barcodeRow = codeword.getRowNumber();
       } else if (rowDifference < 0) {
-        SimpleLog.log(LEVEL.WARNING, "Removing codeword, rowNumber should not decrease, codeword[" + codewordsRow +
-            "]: " + codeword.getRowNumber() + ", value: " + codeword.getValue());
         codewords[codewordsRow] = null;
       } else if (codeword.getRowNumber() >= barcodeMetadata.getRowCount()) {
-        SimpleLog.log(LEVEL.WARNING, "Removing codeword, rowNumber too big, codeword[" + codewordsRow + "]: " +
-            codeword.getRowNumber() + ", value: " + codeword.getValue());
         codewords[codewordsRow] = null;
       } else if (rowDifference > codewordsRow) {
-        SimpleLog.log(LEVEL.WARNING,
-            "Row number jump bigger than codeword row, codeword[" + codewordsRow + "]: previous row: " + barcodeRow +
-                ", new row: " + codeword.getRowNumber() + ", value: " + codeword.getValue());
         codewords[codewordsRow] = null;
       } else {
         int checkedRows;
@@ -107,14 +99,8 @@ public class DetectionResultRowIndicatorColumn extends DetectionResultColumn {
           closePreviousCodewordFound = (codewords[codewordsRow - i] != null);
         }
         if (closePreviousCodewordFound) {
-          SimpleLog.log(LEVEL.WARNING,
-              "Row number jump bigger than codeword row gap, codeword[" + codewordsRow + "]: previous row: " +
-                  barcodeRow + ", new row: " + codeword.getRowNumber() + ", value: " + codeword.getValue());
           codewords[codewordsRow] = null;
         } else {
-          SimpleLog.log(LEVEL.WARNING,
-              "Setting new row number after bigger jump, codeword[" + codewordsRow + "]: previous row: " + barcodeRow +
-                  ", new row: " + codeword.getRowNumber() + ", value: " + codeword.getValue());
           barcodeRow = codeword.getRowNumber();
           currentRowHeight = 1;
         }
@@ -205,10 +191,5 @@ public class DetectionResultRowIndicatorColumn extends DetectionResultColumn {
 
   public boolean isLeft() {
     return isLeft;
-  }
-
-  @Override
-  public String getLogString() {
-    return "IsLeft: " + isLeft + "\n" + super.getLogString();
   }
 }

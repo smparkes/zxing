@@ -1,10 +1,9 @@
 package com.google.zxing.pdf417.decoder;
 
-import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BarcodeMatrix implements SimpleLog.Loggable {
+public class BarcodeMatrix {
   Map<String,BarcodeValue> values = new HashMap<String,BarcodeValue>();
   int maxRow = -1;
   int maxColumn = -1;
@@ -22,7 +21,6 @@ public class BarcodeMatrix implements SimpleLog.Loggable {
       barcodeValue = new BarcodeValue();
       values.put(key, barcodeValue);
     }
-    //    SimpleLog.log(LEVEL.ALL, "setting value " + value, row, column);
     barcodeValue.setValue(value);
   }
 
@@ -32,25 +30,5 @@ public class BarcodeMatrix implements SimpleLog.Loggable {
       return null;
     }
     return barcodeValue.getValue();
-  }
-
-  @Override
-  public String getLogString() {
-    Formatter formatter = new Formatter();
-    for (int row = 0; row <= maxRow; row++) {
-      formatter.format("Row %2d: ", row);
-      for (int column = 0; column <= maxColumn; column++) {
-        BarcodeValue barcodeValue = values.get(getKey(row, column));
-        if (barcodeValue == null || barcodeValue.getValue() == null) {
-          formatter.format("        ", (Object[]) null);
-        } else {
-          formatter.format("%4d(%2d)", barcodeValue.getValue(), barcodeValue.getConfidence(barcodeValue.getValue()));
-        }
-      }
-      formatter.format("\n");
-    }
-    String result = formatter.toString();
-    formatter.close();
-    return result;
   }
 }

@@ -23,7 +23,6 @@ import com.google.zxing.ResultPoint;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.pdf417.PDF417Common;
 import com.google.zxing.pdf417.PDF417DecoderResult;
-import com.google.zxing.pdf417.decoder.SimpleLog.LEVEL;
 import com.google.zxing.pdf417.decoder.ec.ErrorCorrection;
 
 import java.util.ArrayList;
@@ -62,20 +61,14 @@ public final class PDF417ScanningDecoder {
       if (imageTopLeft != null) {
         leftRowIndicatorColumn = getRowIndicatorColumn(image, boundingBox, imageTopLeft, true, minCodewordWidth,
             maxCodewordWidth);
-        SimpleLog.log(LEVEL.DEVEL, leftRowIndicatorColumn);
         leftRowIndicatorColumn.setRowNumbers();
-        SimpleLog.log(LEVEL.DEVEL, leftRowIndicatorColumn);
       }
       if (imageTopRight != null) {
         rightRowIndicatorColumn = getRowIndicatorColumn(image, boundingBox, imageTopRight, false, minCodewordWidth,
             maxCodewordWidth);
-        SimpleLog.log(LEVEL.DEVEL, rightRowIndicatorColumn);
         rightRowIndicatorColumn.setRowNumbers();
-        SimpleLog.log(LEVEL.DEVEL, rightRowIndicatorColumn);
       }
       detectionResult = merge(image, leftRowIndicatorColumn, rightRowIndicatorColumn);
-      SimpleLog.log(LEVEL.DEVEL, leftRowIndicatorColumn);
-      SimpleLog.log(LEVEL.DEVEL, rightRowIndicatorColumn);
       if (detectionResult == null) {
         throw NotFoundException.getNotFoundInstance();
       }
@@ -110,7 +103,6 @@ public final class PDF417ScanningDecoder {
         startColumn = getStartColumn(detectionResult, barcodeColumn, imageRow, leftToRight);
         if (startColumn < 0 || startColumn > boundingBox.getMaxX()) {
           if (previousStartColumn == -1) {
-            SimpleLog.log(LEVEL.WARNING, "Cannot find startColumn, skipping column");
             continue;
           }
           startColumn = previousStartColumn;
@@ -234,20 +226,15 @@ public final class PDF417ScanningDecoder {
   private static PDF417DecoderResult createDecoderResult(DetectionResult detectionResult) throws NotFoundException,
       FormatException, ChecksumException {
     BarcodeMatrix barcodeMatrix = createBarcodeMatrix(detectionResult);
-    SimpleLog.log(LEVEL.DEVEL, barcodeMatrix);
     Integer numberOfCodewords = barcodeMatrix.getValue(0, 1);
     int calculatedNumberOfCodewords = detectionResult.getBarcodeColumnCount() * detectionResult.getBarcodeRowCount() -
         getNumberOfECCodeWords(detectionResult.getBarcodeECLevel());
     if (numberOfCodewords == null) {
-      SimpleLog.log(LEVEL.WARNING, "Error, number of codewords not found");
-      if (calculatedNumberOfCodewords < 1 || calculatedNumberOfCodewords > 900) {
-        SimpleLog.log(LEVEL.FATAL, "Error, invalid calculatedNumberOfCodewords " + calculatedNumberOfCodewords);
+      if (calculatedNumberOfCodewords < 1 || calculatedNumberOfCodewords > PDF417Common.MAX_CODEWORDS_IN_BARCODE) {
         throw NotFoundException.getNotFoundInstance();
       }
       barcodeMatrix.setValue(0, 1, calculatedNumberOfCodewords);
     } else if (numberOfCodewords != calculatedNumberOfCodewords) {
-      SimpleLog.log(LEVEL.WARNING, "Error, number of codewords " + numberOfCodewords + " doesn't match calculated: " +
-          calculatedNumberOfCodewords);
       // The calculated one is more reliable as it is derived from the row indicator column
       numberOfCodewords = calculatedNumberOfCodewords;
     }
@@ -309,7 +296,6 @@ public final class PDF417ScanningDecoder {
     if (codeword != null) {
       return leftToRight ? codeword.getEndX() : codeword.getStartX();
     }
-    SimpleLog.log(LEVEL.INFO, "Cannot find accurate start column");
     int skippedColumns = 0;
 
     while (isValidBarcodeColumn(detectionResult, barcodeColumn - offset)) {
@@ -366,7 +352,6 @@ public final class PDF417ScanningDecoder {
     if (!checkCodewordSkew(codewordBitCount, minCodewordWidth, maxCodewordWidth)) {
       // We could try to use the startX and endX position of the codeword in the same column in the previous row,
       // create the bit count from it and normalize it to 8. This would help with single pixel errors.
-      SimpleLog.log(LEVEL.INFO, "Invalid codeword size " + codewordBitCount + ", skipping", imageRow, startColumn);
       return null;
     }
 
@@ -399,17 +384,7 @@ public final class PDF417ScanningDecoder {
         (((leftToRight && imageColumn == maxColumn) || (!leftToRight && imageColumn == minColumn)) && moduleNumber == moduleBitCount.length - 1)) {
       return moduleBitCount;
     }
-    SimpleLog.log(LEVEL.INFO, "incomplete codeword", imageRow, startColumn);
     return null;
-  }
-
-  private static String getBitCounts(int[] moduleBitCount) {
-    StringBuilder result = new StringBuilder("{");
-    for (int bitCount : moduleBitCount) {
-      result.append(bitCount).append(',');
-    }
-    result.setLength(result.length() - 1);
-    return result.append('}').toString();
   }
 
   private static int getNumberOfECCodeWords(int barcodeECLevel) {
@@ -425,8 +400,6 @@ public final class PDF417ScanningDecoder {
       while (((leftToRight && correctedStartColumn >= minColumn) || (!leftToRight && correctedStartColumn < maxColumn)) &&
           leftToRight == image.get(correctedStartColumn, imageRow)) {
         if (Math.abs(codewordStartColumn - correctedStartColumn) > CODEWORD_SKEW_SIZE) {
-          SimpleLog.log(LEVEL.INFO, "Corrected start position would deviate too much, using previous start position",
-              imageRow, codewordStartColumn);
           return codewordStartColumn;
         }
         correctedStartColumn += increment;
@@ -456,8 +429,6 @@ public final class PDF417ScanningDecoder {
     if (codewords.length == 0) {
       throw FormatException.getFormatInstance();
     }
-    SimpleLog.log(LEVEL.DEVEL, "Codewords: " + codewords.length + ", Erasures: " + erasures.length + ", ecLevel: " +
-        ecLevel);
 
     int numECCodewords = 1 << (ecLevel + 1);
 
