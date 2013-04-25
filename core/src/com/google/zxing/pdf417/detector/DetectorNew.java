@@ -22,8 +22,6 @@ import com.google.zxing.NotFoundException;
 import com.google.zxing.ResultPoint;
 import com.google.zxing.common.BitArray;
 import com.google.zxing.common.BitMatrix;
-import com.google.zxing.common.GridSampler;
-import com.google.zxing.common.PerspectiveTransform;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -153,14 +151,6 @@ public final class DetectorNew {
       }
     }
     return barcodeCoordinates;
-  }
-
-  // introduces rounding errors. Sometimes inverts/corrects the rounding errors created by rotating the test images
-  // in a similar fashion. So test cases might benefit, real life rotated images will not.
-  private BitMatrix rotate180Old(BitMatrix bitMatrix, int width, int height) throws NotFoundException {
-    PerspectiveTransform transform = PerspectiveTransform.quadrilateralToQuadrilateral(0.0f, 0.0f, width, 0.0f, 0.0f,
-        height, width, height, width, height, 0.0f, height, width, 0.0f, 0.0f, 0.0f);
-    return GridSampler.getInstance().sampleGrid(bitMatrix, width, height, transform);
   }
 
   // The following could go to the BitMatrix class (maybe in a more efficient version using the BitMatrix internal
