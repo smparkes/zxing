@@ -16,6 +16,8 @@
 
 package com.google.zxing.pdf417.decoder.ec;
 
+import com.google.zxing.pdf417.PDF417Common;
+
 /**
  * <p>A field based on powers of a generator integer, modulo some modulus.</p>
  *
@@ -24,7 +26,7 @@ package com.google.zxing.pdf417.decoder.ec;
  */
 public final class ModulusGF {
 
-  public static final ModulusGF PDF417_GF = new ModulusGF(929, 3);
+  public static final ModulusGF PDF417_GF = new ModulusGF(PDF417Common.NUMBER_OF_CODEWORDS, 3);
 
   private final int[] expTable;
   private final int[] logTable;

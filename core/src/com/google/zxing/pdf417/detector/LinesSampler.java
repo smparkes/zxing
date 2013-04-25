@@ -16,15 +16,15 @@
 
 package com.google.zxing.pdf417.detector;
 
+import com.google.zxing.NotFoundException;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.pdf417.PDF417Common;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.google.zxing.NotFoundException;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.pdf417.decoder.BitMatrixParser;
 
 /**
  * <p>Encapsulates logic that detects valid codewords from a deskewed lines matrix.
@@ -47,11 +47,11 @@ public final class LinesSampler {
   private static final float[] RATIOS_TABLE;
   static {
     // Pre-computes and outputs the symbol ratio table.
-    float[][] table = new float[BitMatrixParser.SYMBOL_TABLE.length][BARS_IN_SYMBOL];
-    RATIOS_TABLE = new float[BitMatrixParser.SYMBOL_TABLE.length * BARS_IN_SYMBOL];
+    float[][] table = new float[PDF417Common.SYMBOL_TABLE.length][BARS_IN_SYMBOL];
+    RATIOS_TABLE = new float[PDF417Common.SYMBOL_TABLE.length * BARS_IN_SYMBOL];
     int x = 0;
-    for (int i = 0; i < BitMatrixParser.SYMBOL_TABLE.length; i++) {
-      int currentSymbol = BitMatrixParser.SYMBOL_TABLE[i];
+    for (int i = 0; i < PDF417Common.SYMBOL_TABLE.length; i++) {
+      int currentSymbol = PDF417Common.SYMBOL_TABLE[i];
       int currentBit = currentSymbol & 0x1;
       for (int j = 0; j < BARS_IN_SYMBOL; j++) {
         float size = 0.0f;
@@ -223,7 +223,7 @@ public final class LinesSampler {
       int cwWidth = 0;
       for (int i = 0; i < barWidths.size() && cwCount < symbolsPerLine; i++) {
         cwWidth += barWidths.get(i);
-        if ((float)cwWidth > symbolWidths.get(cwCount - 1)) {
+        if (cwWidth > symbolWidths.get(cwCount - 1)) {
           if ((i % 2) == 1) { // check if bar is white
             i++;
           }
@@ -272,7 +272,7 @@ public final class LinesSampler {
         // Search for the most possible codeword by comparing the ratios of bar size to symbol width.
         // The sum of the squared differences is used as similarity metric.
         // (Picture it as the square euclidian distance in the space of eight tuples where a tuple represents the bar ratios.)
-        for (int j = 0; j < BitMatrixParser.SYMBOL_TABLE.length; j++) {
+        for (int j = 0; j < PDF417Common.SYMBOL_TABLE.length; j++) {
           float error = 0.0f;
           for (int k = 0; k < BARS_IN_SYMBOL; k++) {
             float diff = RATIOS_TABLE[j * BARS_IN_SYMBOL + k] - cwRatios[i][k];
@@ -280,7 +280,7 @@ public final class LinesSampler {
           }
           if (error < bestMatchError) {
             bestMatchError = error;
-            bestMatch = BitMatrixParser.SYMBOL_TABLE[j];
+            bestMatch = PDF417Common.SYMBOL_TABLE[j];
           }
         }
         codewords[y][i] = bestMatch;
@@ -434,28 +434,28 @@ public final class LinesSampler {
       rowNumberVotes.clear();
       int firstCodewordDecodedLeft = -1;
       if (detectedCodeWords.get(i).get(0) != 0) {
-        firstCodewordDecodedLeft = BitMatrixParser.getCodeword(detectedCodeWords.get(i).get(0));
+        firstCodewordDecodedLeft = PDF417Common.getCodeword(detectedCodeWords.get(i).get(0));
       }
       int secondCodewordDecodedLeft = -1;
       if (detectedCodeWords.get(i + 1).get(0) != 0) {
-        secondCodewordDecodedLeft = BitMatrixParser.getCodeword(detectedCodeWords.get(i + 1).get(0));
+        secondCodewordDecodedLeft = PDF417Common.getCodeword(detectedCodeWords.get(i + 1).get(0));
       }
       int thirdCodewordDecodedLeft = -1;
       if (detectedCodeWords.get(i + 2).get(0) != 0) {
-        thirdCodewordDecodedLeft = BitMatrixParser.getCodeword(detectedCodeWords.get(i + 2).get(0));
+        thirdCodewordDecodedLeft = PDF417Common.getCodeword(detectedCodeWords.get(i + 2).get(0));
       }
 
       int firstCodewordDecodedRight = -1;
       if (detectedCodeWords.get(i).get(detectedCodeWords.get(i).size() - 1) != 0) {
-        firstCodewordDecodedRight = BitMatrixParser.getCodeword(detectedCodeWords.get(i).get(detectedCodeWords.get(i).size() - 1));
+        firstCodewordDecodedRight = PDF417Common.getCodeword(detectedCodeWords.get(i).get(detectedCodeWords.get(i).size() - 1));
       }
       int secondCodewordDecodedRight = -1;
       if (detectedCodeWords.get(i + 1).get(detectedCodeWords.get(i + 1).size() - 1) != 0) {
-        secondCodewordDecodedRight = BitMatrixParser.getCodeword(detectedCodeWords.get(i + 1).get(detectedCodeWords.get(i + 1).size() - 1));
+        secondCodewordDecodedRight = PDF417Common.getCodeword(detectedCodeWords.get(i + 1).get(detectedCodeWords.get(i + 1).size() - 1));
       }
       int thirdCodewordDecodedRight = -1;
       if (detectedCodeWords.get(i + 2).get(detectedCodeWords.get(i + 2).size() - 1) != 0) {
-        thirdCodewordDecodedRight = BitMatrixParser.getCodeword(detectedCodeWords.get(i + 2).get(detectedCodeWords.get(i + 2).size() - 1));
+        thirdCodewordDecodedRight = PDF417Common.getCodeword(detectedCodeWords.get(i + 2).get(detectedCodeWords.get(i + 2).size() - 1));
       }
 
       if (firstCodewordDecodedLeft != -1 && secondCodewordDecodedLeft != -1) {

@@ -24,6 +24,7 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.pdf417.PDF417Common;
 import com.google.zxing.pdf417.PDF417DecoderResult;
 import com.google.zxing.pdf417.decoder.SimpleLog.LEVEL;
+import com.google.zxing.pdf417.decoder.ec.ErrorCorrection;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,11 @@ public final class PDF417ScanningDecoder {
   //  private static final int STOP_PATTERN_VALUE = 130324;
   private static final int CODEWORD_SKEW_SIZE = 2;
 
+  private static final int MAX_ERRORS = 3;
+  private static final int MAX_EC_CODEWORDS = 512;
+  private static final ErrorCorrection errorCorrection = new ErrorCorrection();
+
+  
   // TODO don't pass in minCodewordWidth and maxCodewordWidth, pass in barcode columns for start and stop pattern
   // columns. That way width can be deducted from the pattern column.
   // This approach also allows to detect more details about the barcode, e.g. if a bar type (white or black) is wider 
@@ -364,29 +370,8 @@ public final class PDF417ScanningDecoder {
       return null;
     }
 
-    //    int[] bitCountCopy = Arrays.copyOf(moduleBitCount, moduleBitCount.length);
-    //    AdjustmentResults adjustmentResults = PDF417CodewordDecoder.adjustBitCount(moduleBitCount);
-    //    int codeword = -1;
-    //    for (int resultIndex = 0; resultIndex < adjustmentResults.size() && codeword == -1; resultIndex++) {
-    //      moduleBitCount = adjustmentResults.get(resultIndex).getModuleCount();
-    //      long decodedValue = getDecodedValue(moduleBitCount);
-    //      if (decodedValue == STOP_PATTERN_VALUE) {
-    //        return null;
-    //      }
-    //      codeword = BitMatrixParser.getCodeword(decodedValue);
-    //    }
-    //    if (codeword == -1) {
-    //      SimpleLog.log(LEVEL.INFO, "Invalid barcode symbol for original pixel count: " + getBitCounts(bitCountCopy) +
-    //          ", Results: " + adjustmentResults.size(), imageRow, endColumn);
-    //      for (int resultIndex = 0; resultIndex < adjustmentResults.size(); resultIndex++) {
-    //        SimpleLog.log(LEVEL.INFO, "Result[" + resultIndex + "]: " +
-    //            getBitCounts(adjustmentResults.get(resultIndex).getModuleCount()), imageRow, endColumn);
-    //      }
-    //      return null;
-    //    }
-    //return new Codeword(startColumn, endColumn, getCodewordBucketNumber(moduleBitCount), codeword);
     int decodedValue = PDF417CodewordDecoder.getDecodedValue(moduleBitCount);
-    int codeword = BitMatrixParser.getCodeword(decodedValue);
+    int codeword = PDF417Common.getCodeword(decodedValue);
     if (codeword == -1) {
       return null;
     }
@@ -476,14 +461,58 @@ public final class PDF417ScanningDecoder {
 
     int numECCodewords = 1 << (ecLevel + 1);
 
-    int correctedErrorsCount = Decoder.correctErrors(codewords, erasures, numECCodewords);
-    Decoder.verifyCodewordCount(codewords, numECCodewords);
+    int correctedErrorsCount = correctErrors(codewords, erasures, numECCodewords);
+    verifyCodewordCount(codewords, numECCodewords);
 
     // Decode the codewords
     PDF417DecoderResult decorderResult = DecodedBitStreamParser.decode(codewords, String.valueOf(ecLevel));
     decorderResult.getResultMetadata().setCorrectedErrorsCount(correctedErrorsCount);
     decorderResult.getResultMetadata().setErasureCount(erasures.length);
     return decorderResult;
+  }
+  /**
+   * <p>Given data and error-correction codewords received, possibly corrupted by errors, attempts to
+   * correct the errors in-place.</p>
+   *
+   * @param codewords   data and error correction codewords
+   * @param erasures positions of any known erasures
+   * @param numECCodewords number of error correction codewards that were available in codewords
+   * @throws ChecksumException if error correction fails
+   */
+  private static int correctErrors(int[] codewords, int[] erasures, int numECCodewords) throws ChecksumException {
+    if (erasures.length > numECCodewords / 2 + MAX_ERRORS || numECCodewords < 0 || numECCodewords > MAX_EC_CODEWORDS) {
+      // Too many errors or EC Codewords is corrupted
+      throw ChecksumException.getChecksumInstance();
+    }
+    return errorCorrection.decode(codewords, numECCodewords, erasures);
+  }
+  /**
+   * Verify that all is OK with the codeword array.
+   *
+   * @param codewords
+   * @return an index to the first data codeword.
+   */
+  private static void verifyCodewordCount(int[] codewords, int numECCodewords) throws FormatException {
+    if (codewords.length < 4) {
+      // Codeword array size should be at least 4 allowing for
+      // Count CW, At least one Data CW, Error Correction CW, Error Correction CW
+      throw FormatException.getFormatInstance();
+    }
+    // The first codeword, the Symbol Length Descriptor, shall always encode the total number of data
+    // codewords in the symbol, including the Symbol Length Descriptor itself, data codewords and pad
+    // codewords, but excluding the number of error correction codewords.
+    int numberOfCodewords = codewords[0];
+    if (numberOfCodewords > codewords.length) {
+      throw FormatException.getFormatInstance();
+    }
+    if (numberOfCodewords == 0) {
+      // Reset to the length of the array - 8 (Allow for at least level 3 Error Correction (8 Error Codewords)
+      if (numECCodewords < codewords.length) {
+        codewords[0] = codewords.length - numECCodewords;
+      } else {
+        throw FormatException.getFormatInstance();
+      }
+    }
   }
 
   private static int[] getBitCountForCodeword(int codeword) {
