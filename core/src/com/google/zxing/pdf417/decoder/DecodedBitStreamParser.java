@@ -27,6 +27,7 @@ import java.util.Arrays;
  * <p>This class contains the methods for decoding the PDF417 codewords.</p>
  *
  * @author SITA Lab (kevin.osullivan@sita.aero)
+ * @author Guenther Grau
  */
 final class DecodedBitStreamParser {
 
