@@ -16,12 +16,12 @@
 
 package com.google.zxing.pdf417;
 
-import java.util.List;
-
 import com.google.zxing.common.DecoderResult;
 
+import java.util.List;
+
 /**
- * Encapsulates the meta data required for Macro PDF417 
+ * Adds PDF417 specific properties to the DecoderResult
  *
  * @author Guenther Grau
  */
