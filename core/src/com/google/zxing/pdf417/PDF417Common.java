@@ -9,6 +9,7 @@ public class PDF417Common {
   // One left row indication column + max 30 data columns + one right row indicator column
   public static final int MAX_CODEWORDS_IN_ROW = 32;
   public static final int MODULES_IN_CODEWORD = 17;
+  public static final int MODULES_IN_STOP_PATTERN = 18;
   public static final int BARS_IN_MODULE = 8;
 
   public static int getBitCountSum(int[] moduleBitCount) {
