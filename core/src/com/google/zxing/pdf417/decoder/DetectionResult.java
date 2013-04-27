@@ -16,6 +16,8 @@
 
 package com.google.zxing.pdf417.decoder;
 
+import com.google.zxing.pdf417.PDF417Common;
+
 import java.util.Formatter;
 
 /**
@@ -37,26 +39,6 @@ final class DetectionResult {
     detectionResultColumns = new DetectionResultColumn[barcodeColumnCount + 2];
   }
 
-  int getImageStartRow(int barcodeColumn) {
-    while (barcodeColumn > 0) {
-      DetectionResultColumn detectionResultColumn = detectionResultColumns[--barcodeColumn];
-      // TODO compare start row with previous result columns
-      // Could try detecting codewords from right to left
-      // if all else fails, could calculate estimate
-      Codeword[] codewords = detectionResultColumn.getCodewords();
-      for (int rowNumber = 0; rowNumber < codewords.length; rowNumber++) {
-        if (codewords[rowNumber] != null) {
-          // next column might start earlier if barcode is not aligned with image
-          if (rowNumber > 0) {
-            rowNumber--;
-          }
-          return detectionResultColumn.getImageRow(rowNumber);
-        }
-      }
-    }
-    return -1;
-  }
-
   void setDetectionResultColumn(int barcodeColumn, DetectionResultColumn detectionResultColumn) {
     detectionResultColumns[barcodeColumn] = detectionResultColumn;
   }
@@ -74,7 +56,7 @@ final class DetectionResult {
   DetectionResultColumn[] getDetectionResultColumns() {
     adjustIndicatorColumnRowNumbers(detectionResultColumns[0]);
     adjustIndicatorColumnRowNumbers(detectionResultColumns[barcodeColumnCount + 1]);
-    int unadjustedCodewordCount = 900;
+    int unadjustedCodewordCount = PDF417Common.MAX_CODEWORDS_IN_BARCODE;
     int previousUnadjustedCount;
     do {
       previousUnadjustedCount = unadjustedCodewordCount;
