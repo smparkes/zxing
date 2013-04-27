@@ -213,4 +213,8 @@ final class DetectionResultRowIndicatorColumn extends DetectionResultColumn {
     return isLeft;
   }
 
+  public String getLogString() {
+    return "IsLeft: " + isLeft + "\n" + super.getLogString();
+  }
+
 }

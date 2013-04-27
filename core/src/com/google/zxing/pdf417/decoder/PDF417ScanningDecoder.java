@@ -27,14 +27,16 @@ import com.google.zxing.pdf417.decoder.ec.ErrorCorrection;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.logging.Logger;
 
 /**
  * @author Guenther Grau
  */
 public final class PDF417ScanningDecoder {
 
+  private static final Logger LOG = Logger.getLogger(PDF417ScanningDecoder.class.getSimpleName());
+  
   private static final int ROW_HEIGHT_SKEW = 2;
-  //  private static final int STOP_PATTERN_VALUE = 130324;
   private static final int CODEWORD_SKEW_SIZE = 2;
 
   private static final int MAX_ERRORS = 3;
@@ -67,12 +69,16 @@ public final class PDF417ScanningDecoder {
       if (imageTopLeft != null) {
         leftRowIndicatorColumn = getRowIndicatorColumn(image, boundingBox, imageTopLeft, true, minCodewordWidth,
             maxCodewordWidth);
+        LOG.fine("Before setRowNumbers\n" + leftRowIndicatorColumn.getLogString());
         leftRowIndicatorColumn.setRowNumbers();
+        LOG.fine("After setRowNumbers\n" + leftRowIndicatorColumn.getLogString());
       }
       if (imageTopRight != null) {
         rightRowIndicatorColumn = getRowIndicatorColumn(image, boundingBox, imageTopRight, false, minCodewordWidth,
             maxCodewordWidth);
+        LOG.fine("Before setRowNumbers\n" + rightRowIndicatorColumn.getLogString());
         rightRowIndicatorColumn.setRowNumbers();
+        LOG.fine("After setRowNumbers\n" + rightRowIndicatorColumn.getLogString());
       }
       detectionResult = merge(leftRowIndicatorColumn, rightRowIndicatorColumn);
       if (detectionResult == null) {
@@ -230,7 +236,10 @@ public final class PDF417ScanningDecoder {
 
   private static DecoderResult createDecoderResult(DetectionResult detectionResult) throws NotFoundException,
       FormatException, ChecksumException {
+    LOG.fine("Before createBarcodeMatrix\n" + detectionResult.getLogString());
     BarcodeMatrix barcodeMatrix = createBarcodeMatrix(detectionResult);
+    LOG.fine("After createBarcodeMatrix\n" + detectionResult.getLogString());
+    LOG.fine("BarcodeMatrix\n" + barcodeMatrix.getLogString());
     Integer numberOfCodewords = barcodeMatrix.getValue(0, 1);
     int calculatedNumberOfCodewords = detectionResult.getBarcodeColumnCount() * detectionResult.getBarcodeRowCount() -
         getNumberOfECCodeWords(detectionResult.getBarcodeECLevel());

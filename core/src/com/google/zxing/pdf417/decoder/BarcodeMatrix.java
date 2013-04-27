@@ -16,6 +16,7 @@
 
 package com.google.zxing.pdf417.decoder;
 
+import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,7 +24,7 @@ import java.util.Map;
  * @author Guenther Grau
  */
 final class BarcodeMatrix {
-  
+
   private final Map<String,BarcodeValue> values = new HashMap<String,BarcodeValue>();
   private int maxRow = -1;
   private int maxColumn = -1;
@@ -46,10 +47,26 @@ final class BarcodeMatrix {
 
   public Integer getValue(int row, int column) {
     BarcodeValue barcodeValue = values.get(getKey(row, column));
-    if (barcodeValue == null) {
-      return null;
-    }
-    return barcodeValue.getValue();
+    // TODO handle ambiguous values better instead of just returning null
+    return barcodeValue == null ? null : barcodeValue.getValue();
   }
 
+  public String getLogString() {
+    Formatter formatter = new Formatter();
+    for (int row = 0; row <= maxRow; row++) {
+      formatter.format("Row %2d: ", row);
+      for (int column = 0; column <= maxColumn; column++) {
+        BarcodeValue barcodeValue = values.get(getKey(row, column));
+        if (barcodeValue == null || barcodeValue.getValue() == null) {
+          formatter.format("        ", (Object[]) null);
+        } else {
+          formatter.format("%4d(%2d)", barcodeValue.getValue(), barcodeValue.getConfidence(barcodeValue.getValue()));
+        }
+      }
+      formatter.format("\n");
+    }
+    String result = formatter.toString();
+    formatter.close();
+    return result;
+  }
 }

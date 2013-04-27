@@ -16,6 +16,8 @@
 
 package com.google.zxing.pdf417.decoder;
 
+import java.util.Formatter;
+
 /**
  * @author Guenther Grau
  */
@@ -254,6 +256,33 @@ final class DetectionResult {
 
   BoundingBox getBoundingBox() {
     return boundingBox;
+  }
+
+  public String getLogString() {
+    Formatter formatter = new Formatter();
+    DetectionResultColumn rowIndicatorColumn = detectionResultColumns[0];
+    if (rowIndicatorColumn == null) {
+      rowIndicatorColumn = detectionResultColumns[barcodeColumnCount + 1];
+    }
+    for (int codewordsRow = 0; codewordsRow < rowIndicatorColumn.getCodewords().length; codewordsRow++) {
+      formatter.format("CW %3d:", codewordsRow);
+      for (int barcodeColumn = 0; barcodeColumn < barcodeColumnCount + 2; barcodeColumn++) {
+        if (detectionResultColumns[barcodeColumn] == null) {
+          formatter.format("    |   ");
+          continue;
+        }
+        Codeword codeword = detectionResultColumns[barcodeColumn].getCodewords()[codewordsRow];
+        if (codeword == null) {
+          formatter.format("    |   ");
+          continue;
+        }
+        formatter.format(" %3d|%3d", codeword.getRowNumber(), codeword.getValue());
+      }
+      formatter.format("\n");
+    }
+    String result = formatter.toString();
+    formatter.close();
+    return result;
   }
 
 }

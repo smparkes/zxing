@@ -19,11 +19,13 @@ package com.google.zxing.pdf417.decoder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
 
 /**
  * @author Guenther Grau
  */
 final class BarcodeValue {
+  private final static Logger LOG = Logger.getLogger(BarcodeValue.class.getSimpleName());
   
   private final Map<Integer,Integer> values = new HashMap<Integer,Integer>();
 
@@ -45,12 +47,12 @@ final class BarcodeValue {
         maxConfidence = entry.getValue();
         result = entry.getKey();
         ambiguous = false;
-      // TODO fix this clause?
-      //} else if (entry.getValue() > maxConfidence) {
-      //  ambigous = true;
+      } else if (entry.getValue() == maxConfidence) {
+        ambiguous = true;
       }
     }
     if (ambiguous) {
+      LOG.info("Ambiguous barcodeValue, returning null");
       return null;
     }
     return result;

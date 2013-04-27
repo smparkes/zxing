@@ -16,6 +16,8 @@
 
 package com.google.zxing.pdf417.decoder;
 
+import java.util.Formatter;
+
 /**
  * @author Guenther Grau
  */
@@ -77,6 +79,21 @@ class DetectionResultColumn {
 
   final Codeword[] getCodewords() {
     return codewords;
+  }
+
+  public String getLogString() {
+    Formatter formatter = new Formatter();
+    int row = 0;
+    for (Codeword codeword : codewords) {
+      if (codeword == null) {
+        formatter.format("%3d:    |   \n", row++);
+        continue;
+      }
+      formatter.format("%3d: %3d|%3d\n", row++, codeword.getRowNumber(), codeword.getValue());
+    }
+    String result = formatter.toString();
+    formatter.close();
+    return result;
   }
 
 }
