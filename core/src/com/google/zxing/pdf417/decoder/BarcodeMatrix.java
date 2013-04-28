@@ -45,13 +45,14 @@ final class BarcodeMatrix {
     barcodeValue.setValue(value);
   }
 
-  public Integer getValue(int row, int column) {
+  public int[] getValue(int row, int column) {
     BarcodeValue barcodeValue = values.get(getKey(row, column));
     // TODO handle ambiguous values better instead of just returning null
     return barcodeValue == null ? null : barcodeValue.getValue();
   }
 
-  public String getLogString() {
+  @Override
+  public String toString() {
     Formatter formatter = new Formatter();
     for (int row = 0; row <= maxRow; row++) {
       formatter.format("Row %2d: ", row);
@@ -60,7 +61,7 @@ final class BarcodeMatrix {
         if (barcodeValue == null || barcodeValue.getValue() == null) {
           formatter.format("        ", (Object[]) null);
         } else {
-          formatter.format("%4d(%2d)", barcodeValue.getValue(), barcodeValue.getConfidence(barcodeValue.getValue()));
+          formatter.format("%4d(%2d)", barcodeValue.getValue()[0], barcodeValue.getConfidence(barcodeValue.getValue()));
         }
       }
       formatter.format("\n");

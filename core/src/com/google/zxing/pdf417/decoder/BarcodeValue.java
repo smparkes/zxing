@@ -16,17 +16,16 @@
 
 package com.google.zxing.pdf417.decoder;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.logging.Logger;
 
 /**
  * @author Guenther Grau
  */
 final class BarcodeValue {
-  private final static Logger LOG = Logger.getLogger(BarcodeValue.class.getSimpleName());
-  
   private final Map<Integer,Integer> values = new HashMap<Integer,Integer>();
 
   public void setValue(int value) {
@@ -38,28 +37,31 @@ final class BarcodeValue {
     values.put(value, confidence);
   }
 
-  public Integer getValue() {
+  public int[] getValue() {
     int maxConfidence = -1;
-    Integer result = null;
-    boolean ambiguous = false;
+    List<Integer> result = new ArrayList<Integer>();
     for (Entry<Integer,Integer> entry : values.entrySet()) {
       if (entry.getValue() > maxConfidence) {
         maxConfidence = entry.getValue();
-        result = entry.getKey();
-        ambiguous = false;
+        result.clear();
+        result.add(entry.getKey());
       } else if (entry.getValue() == maxConfidence) {
-        ambiguous = true;
+        result.add(entry.getKey());
       }
     }
-    if (ambiguous) {
-      LOG.info("Ambiguous barcodeValue, returning null");
+    if (result.isEmpty()) {
       return null;
     }
-    return result;
+    int[] intResult = new int[result.size()];
+    for (int i = 0; i < intResult.length; i++) {
+      intResult[i] = result.get(i);
+    }
+    return intResult;
   }
 
-  public Integer getConfidence(int value) {
-    return values.get(value);
+  public Integer getConfidence(int[] value) {
+    // FIXME, deal with multiple values properly
+    return values.get(value[0]);
   }
 
 }
