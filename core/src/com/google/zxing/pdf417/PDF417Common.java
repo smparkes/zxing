@@ -34,6 +34,8 @@ public final class PDF417Common {
   public static final int MODULES_IN_STOP_PATTERN = 18;
   public static final int BARS_IN_MODULE = 8;
 
+  private static final int[] EMPTY_INT_ARRAY = {};
+
   private PDF417Common() {
   }
 
@@ -47,7 +49,7 @@ public final class PDF417Common {
 
   public static int[] toIntArray(Collection<Integer> list) {
     if (list == null || list.isEmpty()) {
-      return null;
+      return EMPTY_INT_ARRAY;
     }
     int[] result = new int[list.size()];
     int i = 0;

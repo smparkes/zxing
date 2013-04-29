@@ -230,10 +230,10 @@ final class DetectionResultRowIndicatorColumn extends DetectionResultColumn {
       }
     }
     // Maybe we should check if we have ambiguous values?
-    if ((barcodeColumnCount.getValue() == null) ||
-        (barcodeRowCountUpperPart.getValue() == null) ||
-        (barcodeRowCountLowerPart.getValue() == null) ||
-        (barcodeECLevel.getValue() == null) ||
+    if ((barcodeColumnCount.getValue().length == 0) ||
+        (barcodeRowCountUpperPart.getValue().length == 0) ||
+        (barcodeRowCountLowerPart.getValue().length == 0) ||
+        (barcodeECLevel.getValue().length == 0) ||
         barcodeColumnCount.getValue()[0] < 1 ||
         barcodeRowCountUpperPart.getValue()[0] + barcodeRowCountLowerPart.getValue()[0] < PDF417Common.MIN_ROWS_IN_BARCODE ||
         barcodeRowCountUpperPart.getValue()[0] + barcodeRowCountLowerPart.getValue()[0] > PDF417Common.MAX_ROWS_IN_BARCODE) {

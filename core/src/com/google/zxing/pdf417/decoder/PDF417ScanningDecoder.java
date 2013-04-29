@@ -240,27 +240,27 @@ public final class PDF417ScanningDecoder {
   private static DecoderResult createDecoderResult(DetectionResult detectionResult) throws NotFoundException,
       FormatException, ChecksumException {
     LOG.fine("Before createBarcodeMatrix\n" + detectionResult);
-    BarcodeMatrix barcodeMatrix = createBarcodeMatrix(detectionResult);
+    BarcodeValue[][] barcodeMatrix = createBarcodeMatrix(detectionResult);
     LOG.fine("After createBarcodeMatrix\n" + detectionResult);
-    LOG.fine("BarcodeMatrix\n" + barcodeMatrix);
-    int[] numberOfCodewords = barcodeMatrix.getValue(0, 1);
+    LOG.fine("BarcodeMatrix\n" + toString(barcodeMatrix));
+    int[] numberOfCodewords = barcodeMatrix[0][1].getValue();
     int calculatedNumberOfCodewords = detectionResult.getBarcodeColumnCount() *
         detectionResult.getBarcodeRowCount() -
         getNumberOfECCodeWords(detectionResult.getBarcodeECLevel());
-    if (numberOfCodewords == null) {
+    if (numberOfCodewords.length == 0) {
       if (calculatedNumberOfCodewords < 1 || calculatedNumberOfCodewords > PDF417Common.MAX_CODEWORDS_IN_BARCODE) {
         throw NotFoundException.getNotFoundInstance();
       }
-      barcodeMatrix.setValue(0, 1, calculatedNumberOfCodewords);
+      barcodeMatrix[0][1].setValue(calculatedNumberOfCodewords);
     } else if (numberOfCodewords[0] != calculatedNumberOfCodewords) {
       // The calculated one is more reliable as it is derived from the row indicator columns
       LOG.info("numberOfCodewords didn't match calculatedNumberOfCodewords, using calculatedNumberOfCodewords");
-      barcodeMatrix.setValue(0, 1, calculatedNumberOfCodewords);
+      barcodeMatrix[0][1].setValue(calculatedNumberOfCodewords);
     }
     return detectRecursive(detectionResult, barcodeMatrix);
   }
 
-  private static DecoderResult detectRecursive(DetectionResult detectionResult, BarcodeMatrix barcodeMatrix)
+  private static DecoderResult detectRecursive(DetectionResult detectionResult, BarcodeValue[][] barcodeMatrix)
       throws FormatException, ChecksumException {
     Collection<Integer> erasures = new ArrayList<Integer>();
     int[] codewords = new int[detectionResult.getBarcodeRowCount() * detectionResult.getBarcodeColumnCount()];
@@ -268,9 +268,9 @@ public final class PDF417ScanningDecoder {
     List<Integer> ambiguousIndexesList = new ArrayList<Integer>();
     for (int row = 0; row < detectionResult.getBarcodeRowCount(); row++) {
       for (int column = 0; column < detectionResult.getBarcodeColumnCount(); column++) {
-        int[] values = barcodeMatrix.getValue(row, column + 1);
+        int[] values = barcodeMatrix[row][column + 1].getValue();
         int codewordIndex = row * detectionResult.getBarcodeColumnCount() + column;
-        if (values == null) {
+        if (values.length == 0) {
           erasures.add(codewordIndex);
         } else if (values.length == 1) {
           codewords[codewordIndex] = values[0];
@@ -323,8 +323,8 @@ public final class PDF417ScanningDecoder {
         formatter.format("\nRow %2d:         ", ++row);
       }
       formatter.format("%4d    ", codewords[i]);
-      int[] barcodeValue = barcodeMatrix.getValue(row, column + 1);
-      if (barcodeValue == null) {
+      int[] barcodeValue = barcodeMatrix[row][column + 1].getValue();
+      if (barcodeValue.length == 0) {
         differences.format("barcode[%2d][%2d] was null, new value\n", row, column + 1, codewords[i]);
       } else if (barcodeValue[0] != codewords[i]) {
         differences.format("barcode[%2d][%2d] was %3d, corrected value %3d\n", row, column + 1, barcodeValue[0],
@@ -339,8 +339,14 @@ public final class PDF417ScanningDecoder {
     return decoderResult;
   }
 
-  private static BarcodeMatrix createBarcodeMatrix(DetectionResult detectionResult) {
-    BarcodeMatrix barcodeMatrix = new BarcodeMatrix();
+  private static BarcodeValue[][] createBarcodeMatrix(DetectionResult detectionResult) {
+    BarcodeValue[][] barcodeMatrix = new BarcodeValue[detectionResult.getBarcodeRowCount()][detectionResult
+        .getBarcodeColumnCount() + 2];
+    for (int row = 0; row < barcodeMatrix.length; row++) {
+      for (int column = 0; column < barcodeMatrix[row].length; column++) {
+        barcodeMatrix[row][column] = new BarcodeValue();
+      }
+    }
 
     int column = -1;
     for (DetectionResultColumn detectionResultColumn : detectionResult.getDetectionResultColumns()) {
@@ -349,10 +355,10 @@ public final class PDF417ScanningDecoder {
         continue;
       }
       for (Codeword codeword : detectionResultColumn.getCodewords()) {
-        if (codeword == null) {
+        if (codeword == null || codeword.getRowNumber() == -1) {
           continue;
         }
-        barcodeMatrix.setValue(codeword.getRowNumber(), column, codeword.getValue());
+        barcodeMatrix[codeword.getRowNumber()][column].setValue(codeword.getValue());
       }
     }
     return barcodeMatrix;
@@ -549,7 +555,10 @@ public final class PDF417ScanningDecoder {
    * @throws ChecksumException if error correction fails
    */
   private static int correctErrors(int[] codewords, int[] erasures, int numECCodewords) throws ChecksumException {
-    if (erasures.length > numECCodewords / 2 + MAX_ERRORS || numECCodewords < 0 || numECCodewords > MAX_EC_CODEWORDS) {
+    if (erasures != null &&
+        erasures.length > numECCodewords / 2 + MAX_ERRORS ||
+        numECCodewords < 0 ||
+        numECCodewords > MAX_EC_CODEWORDS) {
       // Too many errors or EC Codewords is corrupted
       throw ChecksumException.getChecksumInstance();
     }
@@ -609,6 +618,26 @@ public final class PDF417ScanningDecoder {
 
   private static int getCodewordBucketNumber(int[] moduleBitCount) {
     return (moduleBitCount[0] - moduleBitCount[2] + moduleBitCount[4] - moduleBitCount[6] + 9) % 9;
+  }
+
+  public static String toString(BarcodeValue[][] barcodeMatrix) {
+    Formatter formatter = new Formatter();
+    for (int row = 0; row < barcodeMatrix.length; row++) {
+      formatter.format("Row %2d: ", row);
+      for (int column = 0; column < barcodeMatrix[row].length; column++) {
+        BarcodeValue barcodeValue = barcodeMatrix[row][column];
+        if (barcodeValue.getValue().length == 0) {
+          formatter.format("        ", (Object[]) null);
+        } else {
+          formatter.format("%4d(%2d)", barcodeValue.getValue()[0],
+              barcodeValue.getConfidence(barcodeValue.getValue()[0]));
+        }
+      }
+      formatter.format("\n");
+    }
+    String result = formatter.toString();
+    formatter.close();
+    return result;
   }
 
 }
