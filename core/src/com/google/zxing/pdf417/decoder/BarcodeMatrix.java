@@ -47,7 +47,6 @@ final class BarcodeMatrix {
 
   public int[] getValue(int row, int column) {
     BarcodeValue barcodeValue = values.get(getKey(row, column));
-    // TODO handle ambiguous values better instead of just returning null
     return barcodeValue == null ? null : barcodeValue.getValue();
   }
 
@@ -61,7 +60,8 @@ final class BarcodeMatrix {
         if (barcodeValue == null || barcodeValue.getValue() == null) {
           formatter.format("        ", (Object[]) null);
         } else {
-          formatter.format("%4d(%2d)", barcodeValue.getValue()[0], barcodeValue.getConfidence(barcodeValue.getValue()));
+          formatter.format("%4d(%2d)", barcodeValue.getValue()[0],
+              barcodeValue.getConfidence(barcodeValue.getValue()[0]));
         }
       }
       formatter.format("\n");

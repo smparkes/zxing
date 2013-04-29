@@ -15,6 +15,8 @@
  */
 package com.google.zxing.pdf417;
 
+import java.util.Collection;
+
 /**
  * @author SITA Lab (kevin.osullivan@sita.aero)
  * @author Guenther Grau
@@ -42,7 +44,19 @@ public final class PDF417Common {
     }
     return bitCountSum;
   }
-  
+
+  public static int[] toIntArray(Collection<Integer> list) {
+    if (list == null || list.isEmpty()) {
+      return null;
+    }
+    int[] result = new int[list.size()];
+    int i = 0;
+    for (Integer integer : list) {
+      result[i++] = integer;
+    }
+    return result;
+  }
+
   /**
    * Translate the symbol into a codeword.
    *
@@ -318,7 +332,7 @@ public final class PDF417Common {
       0x1f9d4, 0x1fa1a, 0x1fa2e, 0x1fa32, 0x1fa34, 0x1fa4e, 0x1fa5c, 0x1fa62, 0x1fa64, 0x1fa68, 0x1fa76, 0x1fa8e,
       0x1fa9c, 0x1fab8, 0x1fac2, 0x1fac4, 0x1fac8, 0x1fad0, 0x1fade, 0x1fae6, 0x1faec, 0x1fb16, 0x1fb26, 0x1fb2c,
       0x1fb3a, 0x1fb46, 0x1fb4c, 0x1fb58, 0x1fb6e, 0x1fb72, 0x1fb74, 0x1fb8a, 0x1fb92, 0x1fb94, 0x1fba2, 0x1fba4,
-      0x1fba8, 0x1fbb6, 0x1fbda };
+      0x1fba8, 0x1fbb6, 0x1fbda};
 
   /**
    * This table contains to codewords for all symbols.
@@ -463,5 +477,5 @@ public final class PDF417Common {
       440, 437, 1497, 1494, 1490, 1503, 761, 709, 707, 1706, 913, 912, 2198, 1386, 2164, 2161, 1621, 1766, 2103, 1208,
       2058, 2054, 1145, 1142, 2005, 2002, 1999, 2009, 1488, 1429, 1426, 2200, 1698, 1659, 1656, 1975, 1053, 1957, 1954,
       1001, 998, 1924, 1921, 1918, 1928, 937, 934, 931, 1879, 1876, 1873, 1870, 945, 1885, 1882, 1323, 1273, 1270,
-      2105, 1202, 1199, 1196, 1211, 2061, 2057, 1576, 1543, 1540, 1484, 1481, 1478, 1491, 1700 };
+      2105, 1202, 1199, 1196, 1211, 2061, 2057, 1576, 1543, 1540, 1484, 1481, 1478, 1491, 1700};
 }

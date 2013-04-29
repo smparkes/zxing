@@ -16,6 +16,8 @@
 
 package com.google.zxing.pdf417.decoder;
 
+import com.google.zxing.pdf417.PDF417Common;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +30,10 @@ import java.util.Map.Entry;
 final class BarcodeValue {
   private final Map<Integer,Integer> values = new HashMap<Integer,Integer>();
 
+  /**
+   * Add an occurrence of a value
+   * @param value
+   */
   public void setValue(int value) {
     Integer confidence = values.get(value);
     if (confidence == null) {
@@ -37,6 +43,10 @@ final class BarcodeValue {
     values.put(value, confidence);
   }
 
+  /**
+   * Determines the maximum occurrence of a set value and returns all values which were set with this occurrence. 
+   * @return an array of int, containing the values with the highest occurrence, or null, if no value was set
+   */
   public int[] getValue() {
     int maxConfidence = -1;
     List<Integer> result = new ArrayList<Integer>();
@@ -49,19 +59,11 @@ final class BarcodeValue {
         result.add(entry.getKey());
       }
     }
-    if (result.isEmpty()) {
-      return null;
-    }
-    int[] intResult = new int[result.size()];
-    for (int i = 0; i < intResult.length; i++) {
-      intResult[i] = result.get(i);
-    }
-    return intResult;
+    return PDF417Common.toIntArray(result);
   }
 
-  public Integer getConfidence(int[] value) {
-    // FIXME, deal with multiple values properly
-    return values.get(value[0]);
+  public Integer getConfidence(int value) {
+    return values.get(value);
   }
 
 }

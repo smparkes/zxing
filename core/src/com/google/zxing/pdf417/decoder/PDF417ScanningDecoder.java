@@ -280,8 +280,8 @@ public final class PDF417ScanningDecoder {
         }
       }
     }
-    int[] erasureArray = toIntArray(erasures);
-    int[] ambiguousIndexes = toIntArray(ambiguousIndexesList);
+    int[] erasureArray = PDF417Common.toIntArray(erasures);
+    int[] ambiguousIndexes = PDF417Common.toIntArray(ambiguousIndexesList);
     int[][] ambiguousIndexValues = new int[ambiguousIndexValuesList.size()][];
     for (int i = 0; i < ambiguousIndexValues.length; i++) {
       ambiguousIndexValues[i] = ambiguousIndexValuesList.get(i);
@@ -517,15 +517,6 @@ public final class PDF417ScanningDecoder {
   private static boolean checkCodewordSkew(int codewordSize, int minCodewordWidth, int maxCodewordWidth) {
     return minCodewordWidth - CODEWORD_SKEW_SIZE <= codewordSize &&
         codewordSize <= maxCodewordWidth + CODEWORD_SKEW_SIZE;
-  }
-
-  private static int[] toIntArray(Collection<Integer> list) {
-    int[] result = new int[list.size()];
-    int i = 0;
-    for (Integer integer : list) {
-      result[i++] = integer;
-    }
-    return result;
   }
 
   private static DecoderResult decodeCodewords(int[] codewords, int ecLevel, int[] erasures) throws FormatException,
