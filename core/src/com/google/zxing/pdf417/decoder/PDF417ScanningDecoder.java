@@ -62,13 +62,11 @@ public final class PDF417ScanningDecoder {
     DetectionResultRowIndicatorColumn leftRowIndicatorColumn = null;
     DetectionResultRowIndicatorColumn rightRowIndicatorColumn = null;
     DetectionResult detectionResult = null;
-    boolean again = true;
-    while (again) {
-      again = false;
+    for (int i = 0; i < 2; i++) {
       if (imageTopLeft != null) {
         leftRowIndicatorColumn = getRowIndicatorColumn(image, boundingBox, imageTopLeft, true, minCodewordWidth,
             maxCodewordWidth);
-        LOG.fine("Before setRowNumbers\n" + leftRowIndicatorColumn);
+        LOG.finer("Before setRowNumbers\n" + leftRowIndicatorColumn);
         leftRowIndicatorColumn.setRowNumbers();
         LOG.fine("After setRowNumbers\n" + leftRowIndicatorColumn);
       }
@@ -77,16 +75,18 @@ public final class PDF417ScanningDecoder {
             maxCodewordWidth);
         LOG.finer("Before setRowNumbers\n" + rightRowIndicatorColumn);
         rightRowIndicatorColumn.setRowNumbers();
-        LOG.finer("After setRowNumbers\n" + rightRowIndicatorColumn);
+        LOG.fine("After setRowNumbers\n" + rightRowIndicatorColumn);
       }
       detectionResult = merge(leftRowIndicatorColumn, rightRowIndicatorColumn);
       if (detectionResult == null) {
         throw NotFoundException.getNotFoundInstance();
       }
-      if (detectionResult.getBoundingBox().getMinY() < boundingBox.getMinY() ||
-          detectionResult.getBoundingBox().getMaxY() > boundingBox.getMaxY()) {
+      if (i == 0 &&
+          (detectionResult.getBoundingBox().getMinY() < boundingBox.getMinY() || detectionResult.getBoundingBox()
+              .getMaxY() > boundingBox.getMaxY())) {
         boundingBox = detectionResult.getBoundingBox();
-        again = true;
+      } else {
+        break;
       }
     }
     int maxBarcodeColumn = detectionResult.getBarcodeColumnCount() + 1;
@@ -154,7 +154,8 @@ public final class PDF417ScanningDecoder {
     return BoundingBox.merge(box1, box2);
   }
 
-  private static BoundingBox adjustBoundingBox(DetectionResultRowIndicatorColumn rowIndicatorColumn) {
+  private static BoundingBox adjustBoundingBox(DetectionResultRowIndicatorColumn rowIndicatorColumn)
+      throws NotFoundException {
     if (rowIndicatorColumn == null) {
       return null;
     }
@@ -167,6 +168,10 @@ public final class PDF417ScanningDecoder {
         break;
       }
     }
+    Codeword[] codewords = rowIndicatorColumn.getCodewords();
+    for (int row = 0; missingStartRows > 0 && codewords[row] == null; row++) {
+      missingStartRows--;
+    }
     int missingEndRows = 0;
     for (int row = rowHeights.length - 1; row >= 0; row--) {
       missingEndRows += maxRowHeight - rowHeights[row];
@@ -174,8 +179,11 @@ public final class PDF417ScanningDecoder {
         break;
       }
     }
-    rowIndicatorColumn.getBoundingBox().addMissingRows(missingStartRows, missingEndRows, rowIndicatorColumn.isLeft());
-    return rowIndicatorColumn.getBoundingBox();
+    for (int row = codewords.length - 1; missingEndRows > 0 && codewords[row] == null; row--) {
+      missingEndRows--;
+    }
+    return rowIndicatorColumn.getBoundingBox().addMissingRows(missingStartRows, missingEndRows,
+        rowIndicatorColumn.isLeft());
   }
 
   private static int getMax(int[] values) {
@@ -293,6 +301,9 @@ public final class PDF417ScanningDecoder {
         break;
       } catch (ChecksumException ignored) {
         //
+      }
+      if (ambiguousIndexCount.length == 0) {
+        throw ChecksumException.getChecksumInstance();
       }
       for (int i = 0; i < ambiguousIndexCount.length; i++) {
         if (ambiguousIndexCount[i] < ambiguousIndexValuesList.get(i).length - 1) {

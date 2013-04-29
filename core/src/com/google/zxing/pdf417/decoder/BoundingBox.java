@@ -76,7 +76,12 @@ final class BoundingBox {
     return new BoundingBox(leftBox.image, leftBox.topLeft, leftBox.bottomLeft, rightBox.topRight, rightBox.bottomRight);
   }
 
-  void addMissingRows(int missingStartRows, int missingEndRows, boolean isLeft) {
+  BoundingBox addMissingRows(int missingStartRows, int missingEndRows, boolean isLeft) throws NotFoundException {
+    ResultPoint newTopLeft = topLeft;
+    ResultPoint newBottomLeft = bottomLeft;
+    ResultPoint newTopRight = topRight;
+    ResultPoint newBottomRight = bottomRight;
+
     if (missingStartRows > 0) {
       ResultPoint top = isLeft ? topLeft : topRight;
       int newMinY = (int) top.getY() - missingStartRows;
@@ -86,9 +91,9 @@ final class BoundingBox {
       // TODO use existing points to better interpolate the new x positions
       ResultPoint newTop = new ResultPoint(top.getX(), newMinY);
       if (isLeft) {
-        topLeft = newTop;
+        newTopLeft = newTop;
       } else {
-        topRight = newTop;
+        newTopRight = newTop;
       }
     }
 
@@ -101,12 +106,14 @@ final class BoundingBox {
       // TODO use existing points to better interpolate the new x positions
       ResultPoint newBottom = new ResultPoint(bottom.getX(), newMaxY);
       if (isLeft) {
-        bottomLeft = newBottom;
+        newBottomLeft = newBottom;
       } else {
-        bottomRight = newBottom;
+        newBottomRight = newBottom;
       }
     }
+
     calculateMinMaxValues();
+    return new BoundingBox(image, newTopLeft, newBottomLeft, newTopRight, newBottomRight);
   }
 
   private void calculateMinMaxValues() {
