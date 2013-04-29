@@ -69,16 +69,16 @@ public final class PDF417ScanningDecoder {
       if (imageTopLeft != null) {
         leftRowIndicatorColumn = getRowIndicatorColumn(image, boundingBox, imageTopLeft, true, minCodewordWidth,
             maxCodewordWidth);
-        LOG.fine("Before setRowNumbers\n" + leftRowIndicatorColumn);
+        LOG.finer("Before setRowNumbers\n" + leftRowIndicatorColumn);
         leftRowIndicatorColumn.setRowNumbers();
-        LOG.fine("After setRowNumbers\n" + leftRowIndicatorColumn);
+        LOG.finer("After setRowNumbers\n" + leftRowIndicatorColumn);
       }
       if (imageTopRight != null) {
         rightRowIndicatorColumn = getRowIndicatorColumn(image, boundingBox, imageTopRight, false, minCodewordWidth,
             maxCodewordWidth);
-        LOG.fine("Before setRowNumbers\n" + rightRowIndicatorColumn);
+        LOG.finer("Before setRowNumbers\n" + rightRowIndicatorColumn);
         rightRowIndicatorColumn.setRowNumbers();
-        LOG.fine("After setRowNumbers\n" + rightRowIndicatorColumn);
+        LOG.finer("After setRowNumbers\n" + rightRowIndicatorColumn);
       }
       detectionResult = merge(leftRowIndicatorColumn, rightRowIndicatorColumn);
       if (detectionResult == null) {
