@@ -149,17 +149,6 @@ final class DetectionResultRowIndicatorColumn extends DetectionResultColumn {
 
       codeword.setRowNumberAsRowIndicatorColumn();
 
-      // This only works if we have a complete RI column. If the RI column is cut off at the top or bottom, it
-      // will calculate the wrong numbers and delete correct codewords. Could be used once the barcode height has
-      // been calculated properly.
-      //      float expectedRowNumber = (codewordsRow - firstRow) / averageRowHeight;
-      //      if (Math.abs(codeword.getRowNumber() - expectedRowNumber) > 2) {
-      //        SimpleLog.log(LEVEL.WARNING,
-      //            "Removing codeword, rowNumberSkew too high, codeword[" + codewordsRow + "]: Expected Row: " +
-      //                expectedRowNumber + ", RealRow: " + codeword.getRowNumber() + ", value: " + codeword.getValue());
-      //        codewords[codewordsRow] = null;
-      //      }
-
       int rowDifference = codeword.getRowNumber() - barcodeRow;
 
       // TODO improve handling with case where first row indicator doesn't start with 0
@@ -174,27 +163,9 @@ final class DetectionResultRowIndicatorColumn extends DetectionResultColumn {
         codewords[codewordsRow] = null;
       } else if (codeword.getRowNumber() >= barcodeMetadata.getRowCount()) {
         codewords[codewordsRow] = null;
-      } else if (rowDifference > codewordsRow) {
-        codewords[codewordsRow] = null;
       } else {
-        int checkedRows;
-        if (maxRowHeight > 2) {
-          checkedRows = (maxRowHeight - 2) * rowDifference;
-        } else {
-          checkedRows = rowDifference;
-        }
-        boolean closePreviousCodewordFound = checkedRows >= codewordsRow;
-        for (int i = 1; i <= checkedRows && !closePreviousCodewordFound; i++) {
-          // there must be (height * rowDifference) number of codewords missing. For now we assume height = 1.
-          // This should hopefully get rid of most problems already.
-          closePreviousCodewordFound = codewords[codewordsRow - i] != null;
-        }
-        if (closePreviousCodewordFound) {
-          codewords[codewordsRow] = null;
-        } else {
-          barcodeRow = codeword.getRowNumber();
-          currentRowHeight = 1;
-        }
+        barcodeRow = codeword.getRowNumber();
+        currentRowHeight = 1;
       }
     }
     return (int) (averageRowHeight + 0.5);
