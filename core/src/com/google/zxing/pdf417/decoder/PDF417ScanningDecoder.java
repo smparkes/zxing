@@ -86,6 +86,7 @@ public final class PDF417ScanningDecoder {
               .getMaxY() > boundingBox.getMaxY())) {
         boundingBox = detectionResult.getBoundingBox();
       } else {
+        detectionResult.setBoundingBox(boundingBox);
         break;
       }
     }

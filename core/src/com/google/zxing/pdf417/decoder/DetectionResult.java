@@ -31,7 +31,7 @@ final class DetectionResult {
 
   private final BarcodeMetadata barcodeMetadata;
   private final DetectionResultColumn[] detectionResultColumns;
-  private final BoundingBox boundingBox;
+  private BoundingBox boundingBox;
   private final int barcodeColumnCount;
 
   DetectionResult(BarcodeMetadata barcodeMetadata, BoundingBox boundingBox) {
@@ -266,6 +266,7 @@ final class DetectionResult {
     return detectionResultColumns[barcodeColumn];
   }
 
+  @Override
   public String toString() {
     Formatter formatter = new Formatter();
     DetectionResultColumn rowIndicatorColumn = detectionResultColumns[0];
@@ -291,6 +292,10 @@ final class DetectionResult {
     String result = formatter.toString();
     formatter.close();
     return result;
+  }
+
+  public void setBoundingBox(BoundingBox boundingBox) {
+    this.boundingBox = boundingBox;
   }
 
 }
