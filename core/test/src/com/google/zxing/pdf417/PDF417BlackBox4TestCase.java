@@ -19,14 +19,28 @@ package com.google.zxing.pdf417;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.common.AbstractBlackBoxTestCase;
 
+import org.junit.Test;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.zip.InflaterInputStream;
+
 public final class PDF417BlackBox4TestCase extends AbstractBlackBoxTestCase {
+  private static final Charset ISO88591 = Charset.forName("ISO-8859-1");
+
   private final PDF417Reader barcodeReader = new PDF417Reader();
 
   public PDF417BlackBox4TestCase() {
     super("test/data/blackbox/pdf417-4", null, BarcodeFormat.PDF_417);
     addTest(3, 3, 0, 0, 0.0f);
   }
-/*
+
+  /*
   @Override
   public SummaryResults testBlackBoxCountingResults(boolean assertOnFailure) throws IOException {
     assertFalse(testResults.isEmpty());
@@ -159,23 +173,6 @@ public final class PDF417BlackBox4TestCase extends AbstractBlackBoxTestCase {
     return new SummaryResults(totalFound, totalMustPass, totalTests);
   }
 
-  private byte[] decode(String input) {
-    InflaterInputStream inputStream = new InflaterInputStream(new ByteArrayInputStream(input.getBytes(ISO88591)));
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    byte[] buffer = new byte[1024];
-    int readByteCount = 0;
-    try {
-      while ((readByteCount = inputStream.read(buffer)) >= 0) {
-        outputStream.write(buffer, 0, readByteCount);
-      }
-      outputStream.flush();
-      outputStream.close();
-      return outputStream.toByteArray();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    return null;
-  }
 
   private PDF417ResultMetadata getMeta(Result result) {
     return result.getResultMetadata() == null ? null : (PDF417ResultMetadata) result.getResultMetadata().get(
@@ -206,4 +203,34 @@ public final class PDF417BlackBox4TestCase extends AbstractBlackBoxTestCase {
     return result;
   }
   */
+
+  @Test
+  public void testDecode() throws IOException {
+    File file = new File("core/test/data/blackbox/pdf417-2/24.bin");
+    DataInputStream dataInputStream = new DataInputStream(new FileInputStream(file));
+    byte[] content = new byte[(int) file.length()];
+    dataInputStream.readFully(content);
+    dataInputStream.close();
+    String text = new String(content, ISO88591);
+    System.out.println(new String(decode(text)));
+  }
+
+  private static byte[] decode(String input) {
+    InflaterInputStream inputStream = new InflaterInputStream(new ByteArrayInputStream(input.getBytes(ISO88591)));
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    byte[] buffer = new byte[1024];
+    int readByteCount = 0;
+    try {
+      while ((readByteCount = inputStream.read(buffer)) >= 0) {
+        outputStream.write(buffer, 0, readByteCount);
+      }
+      outputStream.flush();
+      outputStream.close();
+      return outputStream.toByteArray();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
+
 }
