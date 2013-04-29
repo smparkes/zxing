@@ -94,7 +94,7 @@ final class BoundingBox {
 
     if (missingEndRows > 0) {
       ResultPoint bottom = isLeft ? bottomLeft : bottomRight;
-      int newMaxY = (int) bottom.getY() + missingStartRows;
+      int newMaxY = (int) bottom.getY() + missingEndRows;
       if (newMaxY >= image.getHeight()) {
         newMaxY = image.getHeight() - 1;
       }
