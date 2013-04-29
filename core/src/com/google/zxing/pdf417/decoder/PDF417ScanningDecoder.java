@@ -38,7 +38,6 @@ public final class PDF417ScanningDecoder {
 
   private static final Logger LOG = Logger.getLogger(PDF417ScanningDecoder.class.getSimpleName());
 
-  private static final int ROW_HEIGHT_SKEW = 2;
   private static final int CODEWORD_SKEW_SIZE = 2;
 
   private static final int MAX_ERRORS = 3;
@@ -69,9 +68,9 @@ public final class PDF417ScanningDecoder {
       if (imageTopLeft != null) {
         leftRowIndicatorColumn = getRowIndicatorColumn(image, boundingBox, imageTopLeft, true, minCodewordWidth,
             maxCodewordWidth);
-        LOG.finer("Before setRowNumbers\n" + leftRowIndicatorColumn);
+        LOG.fine("Before setRowNumbers\n" + leftRowIndicatorColumn);
         leftRowIndicatorColumn.setRowNumbers();
-        LOG.finer("After setRowNumbers\n" + leftRowIndicatorColumn);
+        LOG.fine("After setRowNumbers\n" + leftRowIndicatorColumn);
       }
       if (imageTopRight != null) {
         rightRowIndicatorColumn = getRowIndicatorColumn(image, boundingBox, imageTopRight, false, minCodewordWidth,
@@ -163,22 +162,19 @@ public final class PDF417ScanningDecoder {
     int maxRowHeight = getMax(rowHeights);
     int missingStartRows = 0;
     for (int rowHeight : rowHeights) {
-      if (rowHeight < maxRowHeight - ROW_HEIGHT_SKEW) {
-        missingStartRows++;
-      } else {
+      missingStartRows += maxRowHeight - rowHeight;
+      if (rowHeight > 0) {
         break;
       }
     }
     int missingEndRows = 0;
     for (int row = rowHeights.length - 1; row >= 0; row--) {
-      if (rowHeights[row] < maxRowHeight - ROW_HEIGHT_SKEW) {
-        missingEndRows++;
-      } else {
+      missingEndRows += maxRowHeight - rowHeights[row];
+      if (rowHeights[row] > 0) {
         break;
       }
     }
-    rowIndicatorColumn.getBoundingBox().addMissingRows(missingStartRows * maxRowHeight, missingEndRows * maxRowHeight,
-        rowIndicatorColumn.isLeft());
+    rowIndicatorColumn.getBoundingBox().addMissingRows(missingStartRows, missingEndRows, rowIndicatorColumn.isLeft());
     return rowIndicatorColumn.getBoundingBox();
   }
 
