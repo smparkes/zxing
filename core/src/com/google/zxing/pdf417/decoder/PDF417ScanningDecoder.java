@@ -288,14 +288,13 @@ public final class PDF417ScanningDecoder {
     }
     int[] ambiguousIndexCount = new int[ambiguousIndexesList.size()];
     DecoderResult decoderResult = null;
-    boolean decoded = false;
-    while (!decoded) {
+    while (true) {
       for (int i = 0; i < ambiguousIndexCount.length; i++) {
         codewords[ambiguousIndexes[i]] = ambiguousIndexValues[i][ambiguousIndexCount[i]];
       }
       try {
         decoderResult = decodeCodewords(codewords, detectionResult.getBarcodeECLevel(), erasureArray);
-        decoded = true;
+        break;
       } catch (ChecksumException ignored) {
         //
       }
@@ -311,7 +310,15 @@ public final class PDF417ScanningDecoder {
         }
       }
     }
+    if (decoderResult.getErrorsCorrected() > 0) {
+      logCorrectedOutput(detectionResult, barcodeMatrix, codewords);
+    }
+    return decoderResult;
+  }
 
+  private static void logCorrectedOutput(DetectionResult detectionResult,
+                                         BarcodeValue[][] barcodeMatrix,
+                                         int[] codewords) {
     Formatter differences = new Formatter();
     differences.format("%s\n", "Corrected values");
     Formatter formatter = new Formatter();
@@ -325,7 +332,7 @@ public final class PDF417ScanningDecoder {
       formatter.format("%4d    ", codewords[i]);
       int[] barcodeValue = barcodeMatrix[row][column + 1].getValue();
       if (barcodeValue.length == 0) {
-        differences.format("barcode[%2d][%2d] was null, new value\n", row, column + 1, codewords[i]);
+        differences.format("barcode[%2d][%2d] was null, new value %3d\n", row, column + 1, codewords[i]);
       } else if (barcodeValue[0] != codewords[i]) {
         differences.format("barcode[%2d][%2d] was %3d, corrected value %3d\n", row, column + 1, barcodeValue[0],
             codewords[i]);
@@ -334,9 +341,8 @@ public final class PDF417ScanningDecoder {
     formatter.format("\n", "");
     LOG.fine(differences.toString());
     differences.close();
-    LOG.fine(formatter.toString());
+    LOG.finer(formatter.toString());
     formatter.close();
-    return decoderResult;
   }
 
   private static BarcodeValue[][] createBarcodeMatrix(DetectionResult detectionResult) {
