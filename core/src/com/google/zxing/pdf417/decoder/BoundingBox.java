@@ -24,7 +24,7 @@ import com.google.zxing.common.BitMatrix;
  * @author Guenther Grau
  */
 final class BoundingBox {
-  
+
   private BitMatrix image;
   private ResultPoint topLeft;
   private ResultPoint bottomLeft;
@@ -40,8 +40,10 @@ final class BoundingBox {
               ResultPoint bottomLeft,
               ResultPoint topRight,
               ResultPoint bottomRight) throws NotFoundException {
-    if ((topLeft == null && topRight == null) || (bottomLeft == null && bottomRight == null) ||
-        (topLeft != null && bottomLeft == null) || (topRight != null && bottomRight == null)) {
+    if ((topLeft == null && topRight == null) ||
+        (bottomLeft == null && bottomRight == null) ||
+        (topLeft != null && bottomLeft == null) ||
+        (topRight != null && bottomRight == null)) {
       throw NotFoundException.getNotFoundInstance();
     }
     init(image, topLeft, bottomLeft, topRight, bottomRight);
@@ -51,11 +53,10 @@ final class BoundingBox {
     init(boundingBox.image, boundingBox.topLeft, boundingBox.bottomLeft, boundingBox.topRight, boundingBox.bottomRight);
   }
 
-  private void init(BitMatrix image, 
-                    ResultPoint topLeft, 
+  private void init(BitMatrix image,
+                    ResultPoint topLeft,
                     ResultPoint bottomLeft,
-                    
-                     ResultPoint topRight, 
+                    ResultPoint topRight,
                     ResultPoint bottomRight) {
     this.image = image;
     this.topLeft = topLeft;
@@ -93,7 +94,7 @@ final class BoundingBox {
 
     if (missingEndRows > 0) {
       ResultPoint bottom = isLeft ? bottomLeft : bottomRight;
-      int newMaxY = (int) bottom.getY() - missingStartRows;
+      int newMaxY = (int) bottom.getY() + missingStartRows;
       if (newMaxY >= image.getHeight()) {
         newMaxY = image.getHeight() - 1;
       }
