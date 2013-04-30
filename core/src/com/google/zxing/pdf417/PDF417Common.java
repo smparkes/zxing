@@ -24,8 +24,8 @@ import java.util.Collection;
 public final class PDF417Common {
 
   public static final int NUMBER_OF_CODEWORDS = 929;
-  // Maximum Codewords (Data + Error). Was designed to be the same as the number of codewords
-  public static final int MAX_CODEWORDS_IN_BARCODE = NUMBER_OF_CODEWORDS;
+  // Maximum Codewords (Data + Error).
+  public static final int MAX_CODEWORDS_IN_BARCODE = NUMBER_OF_CODEWORDS - 1;
   public static final int MIN_ROWS_IN_BARCODE = 3;
   public static final int MAX_ROWS_IN_BARCODE = 90;
   // One left row indication column + max 30 data columns + one right row indicator column
